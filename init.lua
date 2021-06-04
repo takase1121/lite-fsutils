@@ -81,10 +81,12 @@ function fsutils.mkdir(path)
   if system.mkdir then
     for i = 1, #segments do
       local p = table.concat(segments, PATHSEP, 1, i)
-      local ok, err = system.mkdir(p)
-      if not ok then
-        error(err)
-        break
+      if not system.get_file_info(p) then
+        local ok, err = system.mkdir(p)
+        if not ok then
+          error(err)
+          break
+        end
       end
     end
   else
