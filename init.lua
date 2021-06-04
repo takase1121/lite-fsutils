@@ -60,6 +60,10 @@ function fsutils.split(path)
   for segment in string.gmatch(path, "[^/\\]+") do
     segments[#segments + 1] = segment
   end
+  
+  if string.match(path, "^[/\\]") then
+    segments[1] = string.match(path, "^[/\\]") .. segments[1]
+  end
 
   return segments
 end
