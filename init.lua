@@ -47,22 +47,19 @@ function fsutils.move(oldname, newname)
   os.rename(oldname, newname)
 end
 
--- ported from normalize-path module
 function fsutils.split(path)
-  if path == '\\' or path == '/' then return { '/' } end
-  if #path <= 1 then return { path } end
-  
-  if string.match(path, "\\\\[%.?]\\") then
-    error("namespaces are not supported")
-  end
-  
   local segments = {}
-  for segment in string.gmatch(path, "[^/\\]+") do
-    segments[#segments + 1] = segment
+  local pos = 1
+  while true do
+    local s, e = string.find(path, "[/\\]+", pos)
+    if not s then break end
+    table.insert(segments, string.sub(path, pos, s - 1))
+    pos = e + 1
   end
+  table.insert(list, string.sub(path, pos))
   
-  if string.match(path, "^[/\\]") then
-    segments[1] = string.match(path, "^[/\\]") .. segments[1]
+  if segments[#segments] == '' then
+    table.remove(segments)
   end
 
   return segments
@@ -81,12 +78,13 @@ function fsutils.mkdir(path)
   if system.mkdir then
     for i = 1, #segments do
       local p = table.concat(segments, PATHSEP, 1, i)
-      if not system.get_file_info(p) then
-        local ok, err = system.mkdir(p)
-        if not ok then
-          error(err)
-          break
-        end
+      local stat = system.get_file_info(p)
+      if stat and stat.type == "file" then
+        return nil, "path exists as a file", p
+      end
+      local ok, err = system.mkdir(p)
+      if not ok then
+        return nil, err, p
       end
     end
   else
