@@ -12,7 +12,7 @@ function fsutils.iterdir(dir)
     if not path then return end
     
     for _, file in ipairs(system.list_dir(path) or {}) do
-      stack[#stack + 1] = path .. '/' .. file
+      stack[#stack + 1] = path .. PATHSEP .. file
     end
     
     return path, system.get_file_info(path)
@@ -76,16 +76,22 @@ end
 function fsutils.mkdir(path)
   local segments = fsutils.split(path)
   if system.mkdir then
+    local p = ""
     for i = 1, #segments do
-      local p = table.concat(segments, PATHSEP, 1, i)
-      local stat = system.get_file_info(p)
-      if stat and stat.type == "file" then
-        return nil, "path exists as a file", p
-      end
-      local ok, err = system.mkdir(p)
-      if not ok then
-        return nil, err, p
-      end
+      p = table.concat(segments, PATHSEP, 1, i)
+    end
+    
+    if p == "" then
+      return nil, "path empty", p
+    end
+    
+    local stat = system.get_file_info(p)
+    if stat and stat.type == "file" then
+      return nil, "path exists as a file", p
+    end
+    local ok, err = system.mkdir(p)
+    if not ok then
+      return nil, err, p
     end
   else
     -- just wing it lol
