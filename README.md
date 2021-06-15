@@ -8,6 +8,5 @@ This plugin is required for [`lite-contextmenu`](https://github.com/takase1121/l
 
 ### Note : 
 
-```
 fsutils.delete() depends on os.remove() for deleting files and directories. While this works for files everywhere, it doesnot delete directories on Windows.
-```
+
